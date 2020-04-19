@@ -2,6 +2,8 @@
 
 Janklab-OPP is a redistribution of other open source libraries that are used in Matlab but not available on Maven Central from their original authors. The purpose of this project is to make these projects, in the particular versions used in Matlab, available on Maven Central so that they can be used in Maven projects, and specifically in [Matlab-JUMP](https://github.com/apjanke/matlab-jump).
 
+This repo contains modifications of the original libraries so that they build with Maven and can be uploaded to Maven Central. No other modification is done: no bugfixes are made, and no development is done on the library source code itself.
+
 ## License
 
 Janklab-OPP itself, to the extent that it has any code, is licensed under the BSD 3-Clause License.
