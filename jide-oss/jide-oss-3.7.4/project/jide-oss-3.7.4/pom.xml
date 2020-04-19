@@ -39,6 +39,18 @@
             <email>support@jidesoft.com</email>
         </developer>
     </developers>
+    <contributors>
+        <contributor>
+            <name>Andrew Janke</name>
+            <email>floss@apjanke.net</email>
+            <url>https://apjanke.net</url>
+            <organization>Janklab</organization>
+            <organizationUrl>https://github.com/apjanke/janklab</organizationUrl>
+            <roles>
+                <role>packager</role>
+            </roles>
+        </contributor>
+    </contributors>
     <build>
         <sourceDirectory>src,src-jdk6</sourceDirectory>
         <resources>
