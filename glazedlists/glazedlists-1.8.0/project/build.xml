@@ -1,0 +1,1035 @@
+<!--
+   Glazed Lists
+   Copyright 2003 publicobject.com, O'Dell Engineering Ltd.
+-->
+
+<project name="glazedlists" default="jar" basedir=".">
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       BUILD ADMINISTRATION
+       Create build directories and set up necessary paths.
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <property name="java.target.version" value="1.5"/>
+    <property name="java.target.version.fileFriendlyName" value="java15"/>
+
+	<!-- filter for maven pom.xml -->
+	<filter token="glazedlists.version" value="${version}"/>
+	<filter token="glazedlists.artifactId" value="glazedlists_${java.target.version.fileFriendlyName}"/>
+	
+    <property environment="env"/>
+    <tstamp prefix="datestamp">
+        <format property="dateAndTime" pattern="yyyy-MM-dd H:mm"/>
+    </tstamp>
+
+	<!-- Version number for the next planned release -->
+	<property name="next.release.version" value="1.8"/>
+	
+	<!-- Default implementation version for jar file, overridden by release target -->
+	<property name="implementation.version" value="${next.release.version}.alpha${datestamp.DSTAMP}"/>
+	
+	<!-- Default OSGI Bundle version for jar file, overridden by release target -->	
+	<property name="bundle.version" value="${implementation.version}"/>
+	
+	<!-- Default title for javadocs, overridden by release target -->
+	<property name="doctitle" value="Glazed Lists"/>
+
+	<!-- Default name for distribution zip file, overridden by release target -->
+	<property name="dist.file" value="glazedlists-source_${java.target.version.fileFriendlyName}.zip"/>
+
+	<!-- Release name for distribution zip file -->
+	<property name="release.dist.file" value="glazedlists-${version}-source_${java.target.version.fileFriendlyName}.zip"/>
+
+	<!-- Default name for jar file, overridden by release target -->
+	<property name="jar.file" value="glazedlists_${java.target.version.fileFriendlyName}.jar"/>
+
+	<!-- Release name for jar file -->
+	<property name="release.jar.file" value="glazedlists-${version}_${java.target.version.fileFriendlyName}.jar"/>
+
+	<!-- base output directory for build artefacts -->
+	<property name="target.dir" value="target"/>
+
+	<!-- output directory for compiled classes -->
+	<property name="classes.dir" value="${target.dir}/classes"/>
+
+	<!-- output directory for compiled test classes -->
+	<property name="testclasses.dir" value="${target.dir}/test-classes"/>
+
+	<!-- output directory for japex reports -->
+	<property name="reports.dir" value="${target.dir}/reports"/>
+
+	<!-- output directory for javadocs -->
+	<property name="docs.dir" value="${target.dir}/docs"/>
+
+	<!-- output directory for demo jar contents -->
+	<property name="issuesbrowserjar.dir" value="${target.dir}/issuesbrowserjar"/>
+	<property name="xmlbrowser.dir" value="${target.dir}/xmlbrowserjar"/>
+
+	<!-- output directory for java 1.4 build -->
+	<property name="java14_glazedlists.dir" value="${target.dir}/java14_glazedlists"/>
+
+	<!-- output directory for maven upload bundle -->
+	<property name="maven_bundle.dir" value="${target.dir}/maven_bundle"/>
+
+	<!-- name of maven upload bundle -->
+	<property name="maven_bundle.file" value="glazedlists_${java.target.version.fileFriendlyName}-${version}-bundle.jar"/>	
+
+	<patternset id="test.files">
+		<include name="**/*.xml"/>
+	</patternset>
+
+	<!-- determine the platform swt jar file name and download path from java.net -->
+	<condition property="swt.jar.path" value="https://glazedlists.dev.java.net/files/documents/1073/64389/">
+		<os family="windows"/>
+	</condition>
+	<condition property="swt.jar.file" value="org.eclipse.swt.win32.win32.x86.jar">
+		<os family="windows"/>
+	</condition>
+
+	<condition property="swt.jar.path" value="https://glazedlists.dev.java.net/files/documents/1073/64390/">
+		<os family="mac"/>
+	</condition>
+	<condition property="swt.jar.file" value="org.eclipse.swt.carbon.macosx.jar">
+		<os family="mac"/>
+	</condition>
+
+	<condition property="swt.jar.path" value="https://glazedlists.dev.java.net/files/documents/1073/64627/">
+		<os name="Linux"/>
+	</condition>
+	<condition property="swt.jar.file" value="org.eclipse.swt.gtk.linux.x86.jar">
+		<os name="Linux"/>
+	</condition>
+	
+	<!-- use windows files as default if nothing matches -->
+	<property name="swt.jar.path" value="https://glazedlists.dev.java.net/files/documents/1073/64389/"/>
+	<property name="swt.jar.file" value="org.eclipse.swt.win32.win32.x86.jar"/>
+	
+	<target name="clean"
+		description="Clean up generated files, forcing them to be rebuilt.">
+
+		<!-- Delete target directory with all generated build artifacts -->
+		<delete dir="${target.dir}"/>
+
+		<delete>
+			<fileset dir="${basedir}" defaultexcludes="no">
+                <!-- Delete temporary files from JEdit -->
+				<include name="**/*~"/>
+			</fileset>
+		</delete>
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   JAVADOC
+	   Construct a browsable API.
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<target name="docs"
+		description="Scan the source code to generate the Javadoc API.">
+		<!-- document all the source -->
+        <mkdir dir="${docs.dir}"/>
+		<javadoc
+			destdir="${docs.dir}/api" author="true" use="true" windowtitle="Glazed Lists" source="${java.target.version}">
+			<packageset dir="source"><exclude name="**/impl/**"/><exclude name="**/migrationkit/**"/></packageset>
+			<packageset dir="extensions/calculation/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/swt/source"><exclude name="**/impl/**"/><exclude name="**/migrationkit/**"/></packageset>
+			<packageset dir="extensions/ktable/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/jgoodiesforms/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/nachocalendar/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/jfreechart/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/swinglabs/source"><exclude name="**/impl/**"/></packageset>
+			<packageset dir="extensions/hibernate/source"><exclude name="**/impl/**"/></packageset>			
+			<packageset dir="extensions/treetable/source"><exclude name="**/impl/**"/></packageset>			
+            <classpath><fileset dir="extensions/" includes="**/lib/*.jar"/></classpath>
+            <link href="http://java.sun.com/j2se/${java.target.version}/docs/api/"/>
+            <link href="http://help.eclipse.org/help33/nftopic/org.eclipse.platform.doc.isv/reference/api/"/>
+            <link href="http://www.jdocs.com/formlayout/1.0.4/api/" packagelistloc="extensions/jgoodiesforms/lib"/>
+            <link href="http://nachocalendar.sourceforge.net/doc/"/>
+            <link href="http://www.jfree.org/jfreechart/api/javadoc/"/>
+            <link href="http://download.java.net/javadesktop/swinglabs/releases/0.8/docs/api/"/>
+			<link href="http://www.hibernate.org/hib_docs/v3/api/"/>
+            <doctitle><![CDATA[<h1>${doctitle}</h1>]]></doctitle>
+			<bottom><![CDATA[<a href="http://publicobject.com/glazedlists/" target="_top">Glazed Lists</a>, Copyright &#169; 2003 publicobject.com, O'Dell Engineering.<br>Documentation build by ${user.name} at ${datestamp.dateAndTime}]]></bottom>
+		</javadoc>
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   JAR
+	   Construct the .jar file for use in a library.
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <target name="jar" depends="compileall"
+        description="Creates glazedlists jar file (which is also a valid OSGi bundle) containing all UI libraries.">
+
+        <mkdir dir="tools"/>
+        <!--download the BND library for creating entries in the manifest.mf file which make it a compliant OSGi bundle. See http://www.osgi.org/ -->
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/110958/bnd.jar"/>
+            <arg value="tools/bnd.jar"/>
+        </java>
+
+        <!-- prepare the bnd task which generates OSGi bundle JARs -->
+        <taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="tools/bnd.jar"/>
+
+        <!-- create a normal jar file -->
+        <jar destfile="${target.dir}/${jar.file}" update="true" index="true">
+            <fileset dir="${classes.dir}">
+                <exclude name="com/publicobject/**"/> <!-- IssuesBrowser -->
+            </fileset>
+            <fileset dir=".">
+                <include name="resources/**"/>
+            </fileset>
+        </jar>
+
+        <!-- use the BND tool to generate an OSGi jar from scratch, using the original JAR file as input -->
+        <bnd classpath="${target.dir}/${jar.file}" output="${target.dir}/${jar.file}.osgi" exceptions="true" files="glazedlists.bnd"/>
+
+        <!-- delete the original jar file -->
+        <delete file="${target.dir}/${jar.file}"/>
+
+        <!-- rename the OSGi Bundle to the orignal jar file's name -->
+        <move file="${target.dir}/${jar.file}.osgi" toFile="${target.dir}/${jar.file}"/>
+    </target>
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   COMPILE
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<target name="compile" depends="swing"
+		description="Compile the default components of the source.">
+	</target>
+
+	<target name="compileall" depends="core,migrationkit,swing,io,calculation,swt,ktable,issuesbrowser,swinglabs,hibernate,icu4j"
+		description="Compile all components of the source.">
+	</target>
+
+	<target name="core">
+        <mkdir dir="${classes.dir}"/>
+		<javac destdir="${classes.dir}" srcdir="source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <!-- swing -->
+            <exclude name="**/swing/**"/>
+            <!-- io -->
+            <exclude name="**/ctp/**"/>
+            <exclude name="**/io/**"/>
+            <exclude name="**/nio/**"/>
+            <exclude name="**/pmap/**"/>
+            <exclude name="**/rbp/**"/>
+		</javac>
+	</target>
+
+    <target name="migrationkit" depends="core">
+        <javac destdir="${classes.dir}" srcdir="source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <include name="**/migrationkit/**"/>
+        </javac>
+    </target>
+
+	<target name="swing" depends="core">
+		<javac destdir="${classes.dir}" srcdir="source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+			<include name="**/swing/**"/>
+			<exclude name="**/migrationkit/**"/>
+		</javac>
+	</target>
+
+	<target name="io" depends="core">
+		<javac destdir="${classes.dir}" srcdir="source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+			<include name="**/ctp/**"/>
+			<include name="**/io/**"/>
+			<include name="**/nio/**"/>
+			<include name="**/pmap/**"/>
+			<include name="**/rbp/**"/>
+		</javac>
+	</target>
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       EXTENSIONS
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <target name="calculation" depends="swing">
+        <mkdir dir="extensions/calculation/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/26197/jcommon.jar"/>
+            <arg value="extensions/calculation/lib/jcommon.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/26198/jfreechart.jar"/>
+            <arg value="extensions/calculation/lib/jfreechart.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/calculation/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/calculation/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="swt" depends="core">
+        <mkdir dir="extensions/swt/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/64386/org.eclipse.core.commands.jar"/>
+            <arg value="extensions/swt/lib/org.eclipse.core.commands.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/64387/org.eclipse.equinox.common.jar"/>
+            <arg value="extensions/swt/lib/org.eclipse.equinox.common.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/64388/org.eclipse.jface.jar"/>
+            <arg value="extensions/swt/lib/org.eclipse.jface.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="${swt.jar.path}${swt.jar.file}"/>
+            <arg value="extensions/swt/lib/${swt.jar.file}"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/swt/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/swt/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="ktable" depends="core,swt,issuesbrowser">
+        <mkdir dir="extensions/ktable/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/24419/ktable.jar"/>
+            <arg value="extensions/ktable/lib/ktable.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/ktable/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/ktable/lib/" includes="*.jar"/>
+                <fileset dir="extensions/swt/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jgoodiesforms" depends="swing">
+        <mkdir dir="extensions/jgoodiesforms/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/27334/forms.jar"/>
+            <arg value="extensions/jgoodiesforms/lib/forms.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/jgoodiesforms/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/jgoodiesforms/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="swinglabs" depends="swing, issuesbrowser">
+        <!-- the swinglabs .jar is Java 1.5+ only, so we do not bother to run
+             this code through our Java 1.5 to Java 1.4 source code translator -->
+        <mkdir dir="extensions/swinglabs/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/92328/swingx.jar"/>
+            <arg value="extensions/swinglabs/lib/swingx.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/swinglabs/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/swinglabs/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="icu4j" depends="swing">
+        <mkdir dir="extensions/icu4j/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/41904/icu4j.jar"/>
+            <arg value="extensions/icu4j/lib/icu4j.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/icu4j/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/icu4j/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="nachocalendar" depends="swing">
+        <mkdir dir="extensions/nachocalendar/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/29958/nachocalendar.jar"/>
+            <arg value="extensions/nachocalendar/lib/nachocalendar.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/nachocalendar/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/nachocalendar/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="treetable" depends="swing">
+        <javac destdir="${classes.dir}" srcdir="extensions/treetable/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off"/>
+    </target>
+
+    <target name="jfreechart" depends="swing">
+        <mkdir dir="extensions/jfreechart/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/26197/jcommon.jar"/>
+            <arg value="extensions/jfreechart/lib/jcommon.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/26198/jfreechart.jar"/>
+            <arg value="extensions/jfreechart/lib/jfreechart.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/jfreechart/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/jfreechart/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+	<target name="hibernate" depends="core">
+        <mkdir dir="extensions/hibernate/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/58581/hibernate.jar"/>
+            <arg value="extensions/hibernate/lib/hibernate.jar"/>
+        </java>		
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/58582/hibernate-libs.jar"/>
+            <arg value="extensions/hibernate/lib/hibernate-libs.jar"/>
+        </java>				
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/39276/hsqldb.jar"/>
+            <arg value="extensions/hibernate/lib/hsqldb.jar"/>
+        </java>				
+        <javac destdir="${classes.dir}" srcdir="extensions/hibernate/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/hibernate/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="japex" depends="compile">
+        <!-- download dependencies for japex -->
+        <mkdir dir="extensions/japex/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/37606/activation.jar"/>
+            <arg value="extensions/japex/lib/activation.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/37605/japex-all.jar"/>
+            <arg value="extensions/japex/lib/japex-all.jar"/>
+        </java>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/37607/mail.jar"/>
+            <arg value="extensions/japex/lib/mail.jar"/>
+        </java>
+        <!-- compile the Japex performance tests -->
+        <javac destdir="${classes.dir}" srcdir="extensions/japex/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/japex/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+        <!-- execute the Japex performance tests -->
+    	<!--
+        <property name="config" value="extensions/japex/ListEventAssembler-JapexConfig.xml"/>
+        <property name="config" value="extensions/japex/ListEventPublisher-JapexConfig.xml"/>
+        <property name="config" value="extensions/japex/SortedList-JapexConfig.xml"/>
+        -->
+        <property name="config" value="extensions/japex/ThreadProxy-JapexConfig.xml"/>
+        <java dir="." fork="true" classname="com.sun.japex.Japex">
+            <classpath>
+                <fileset dir="extensions/japex/lib/" includes="*.jar"/>
+            </classpath>
+        	<sysproperty key="japex.reportsDirectory" value="${reports.dir}"/>
+            <arg line="${config}/"/>
+        </java>
+    </target>
+
+    <target name="issuesbrowser" depends="core,swing,swt,jfreechart,jgoodiesforms,nachocalendar,treetable">
+        <mkdir dir="extensions/issuesbrowser/lib"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/37509/http.jar"/>
+            <arg value="extensions/issuesbrowser/lib/http.jar"/>
+        </java>
+        <javac destdir="${classes.dir}" srcdir="extensions/issuesbrowser/source" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <fileset dir="extensions/swt/lib/" includes="*.jar"/>
+                <fileset dir="extensions/jfreechart/lib/" includes="*.jar"/>
+                <fileset dir="extensions/jgoodiesforms/lib/" includes="*.jar"/>
+                <fileset dir="extensions/nachocalendar/lib/" includes="*.jar"/>
+                <fileset dir="extensions/issuesbrowser/lib/" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- check if the user already has BCEL in their ANT \lib directory (which is required to execute the "demojar" target -->
+    <available classname="org.apache.bcel.Constants" property="bcel.present"/>
+
+    <target name="downloadBCEL" unless="bcel.present">
+        <!-- explain the BCEL requirement -->
+        <echo>To build the demojar, Glazed Lists requires the Byte Code Engineering Library (BCEL) to be available in the \lib directory of your ANT installation. The Glazed Lists build system will now automatically attempt to download the BCEL into ${ant.home}\lib on your behalf.</echo>
+
+        <!-- wait for the user to read the message before continuing -->
+        <input>Press Return to begin the download...</input>
+
+        <!-- download bcel.jar to the ant \lib directory -->
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/42723/bcel.jar"/>
+            <arg value="${ant.home}/lib/bcel.jar"/>
+        </java>
+
+        <!-- recheck if bcel.jar is now in the ANT \lib directory -->
+        <available classname="org.apache.bcel.Constants" property="bcel.present"/>
+
+        <!-- check if bcel.jar was downloaded successfully and display the instructions to rerun the ANT command. -->
+        <fail message="BCEL has been successfully downloaded. Please re-execute the ANT task and it will now proceed normally.">
+            <condition>
+                <available file="${ant.home}/lib/bcel.jar"/>
+            </condition>
+        </fail>
+
+        <!-- otherwise bcel.jar could not be downloaded so fail with instructions on how to resolve the problem manually -->
+        <fail message="The BCEL could not be downloaded. You must manually download it from here: http://jakarta.apache.org/site/downloads/downloads_bcel.cgi and place it in your ANT installation here: ${ant.home}\lib"/>
+    </target>
+
+    <target name="issuesbrowserjar" depends="clean,issuesbrowser,downloadBCEL"
+        description="Create a .jar file with the Issues Browser demo application.">
+
+        <!-- make a temporary folder for assembling the demojar -->
+        <mkdir dir="${issuesbrowserjar.dir}"/>
+
+        <!-- copy the classes into the demojar folder -->
+        <copy todir="${issuesbrowserjar.dir}">
+            <fileset dir="${classes.dir}"/>
+        </copy>
+
+        <!-- unjar the third-party classes into the demojar folder -->
+        <unjar src="extensions/jfreechart/lib/jcommon.jar" dest="${issuesbrowserjar.dir}"/>
+        <unjar src="extensions/jfreechart/lib/jfreechart.jar" dest="${issuesbrowserjar.dir}"/>
+        <unjar src="extensions/jgoodiesforms/lib/forms.jar" dest="${issuesbrowserjar.dir}"/>
+        <unjar src="extensions/nachocalendar/lib/nachocalendar.jar" dest="${issuesbrowserjar.dir}"/>
+        <unjar src="extensions/issuesbrowser/lib/http.jar" dest="${issuesbrowserjar.dir}"/>
+
+        <!-- create a *minimal* set of classes required to execute the swing demo -->
+        <classfileset id="issuesBrowserClasses" dir="${issuesbrowserjar.dir}" rootclass="com.publicobject.issuesbrowser.swing.IssuesBrowser"/>
+
+        <!-- create the actual demo jar -->
+        <jar destfile="${target.dir}/glazedlists-demo.jar" update="true" index="true">
+            <fileset refid="issuesBrowserClasses"/>
+            <fileset dir="${issuesbrowserjar.dir}">
+                <include name="**/LocalizationBundle*.properties"/>
+                <include name="org/jfree/chart/resources/JFreeChartResources.class"/>
+                <include name="org/jfree/resources/JCommonResources.class"/>
+                <include name="net/sf/nachocalendar/language*.properties"/>
+            </fileset>
+            <fileset dir=".">
+                <include name="resources/**"/>
+            </fileset>
+            <fileset dir="extensions/issuesbrowser">
+                <include name="resources/**"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="com.publicobject.issuesbrowser.swing.IssuesBrowser"/>
+            </manifest>
+        </jar>
+	</target>
+
+    <target name="xmlbrowserjar" depends="clean,issuesbrowser,downloadBCEL"
+        description="Create a .jar file with the Xml Browser demo application.">
+
+        <!-- make a temporary folder for assembling the demojar -->
+        <mkdir dir="${xmlbrowser.dir}"/>
+
+        <!-- copy the classes into the xmlbrowser folder -->
+        <copy todir="${xmlbrowser.dir}">
+            <fileset dir="${classes.dir}"/>
+        </copy>
+
+        <!-- xmlToEventList a *minimal* set of classes required to execute the swing demo -->
+        <classfileset id="xmlBrowserClasses" dir="${xmlbrowser.dir}" rootclass="com.publicobject.xmlbrowser.XmlBrowser"/>
+
+        <!-- xmlToEventList the actual demo jar -->
+        <jar destfile="${target.dir}/xmlbrowser.jar" update="true" index="true">
+            <fileset refid="xmlBrowserClasses"/>
+            <fileset dir=".">
+                <include name="resources/**"/>
+                <include name="pom.xml"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="com.publicobject.xmlbrowser.XmlBrowser"/>
+            </manifest>
+        </jar>
+	</target>
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   CREATE JAVA 1.4-COMPATIBLE PROJECT
+	   Create a new project folder java14_glazedlists/ that can be used to
+	   build and develop Glazed Lists on J2SE 1.4.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <target name="java14" depends="compileall,compiletests" description="Compile Glazed Lists for deployment on a J2SE 1.4">
+        <!-- clean the java14 directory -->
+        <delete dir="${java14_glazedlists.dir}"/>
+
+        <!-- download the declawer build tool -->
+        <mkdir dir="tools"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/25249/declawer.jar"/>
+            <arg value="tools/declawer.jar"/>
+        </java>
+
+        <!-- Declaw source/ -->
+        <mkdir dir="${java14_glazedlists.dir}/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="source"/>
+            <arg value="${ant.home}/lib/junit.jar"/>
+            <arg value="${java14_glazedlists.dir}/source"/>
+        </java>
+
+        <!-- Declaw test/ -->
+        <mkdir dir="${java14_glazedlists.dir}/test"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="test"/>
+            <arg value="${classes.dir}${path.separator}${ant.home}/lib/junit.jar${path.separator}extensions/jgoodiesforms/lib/forms.jar${path.separator}extensions/hibernate/lib/hibernate.jar${path.separator}extensions/swinglabs/lib/swingx.jar${path.separator}extensions/swt/lib/org.eclipse.core.commands.jar${path.separator}extensions/swt/lib/org.eclipse.jface.jar${path.separator}extensions/swt/lib/${swt.jar.file}${path.separator}extensions/jfreechart/lib/jcommon.jar${path.separator}extensions/jfreechart/lib/jfreechart.jar"/>
+            <arg value="${java14_glazedlists.dir}/test"/>
+        </java>
+
+        <!-- Declaw swt/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/swt/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/swt/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/swt/lib/org.eclipse.core.commands.jar${path.separator}extensions/swt/lib/org.eclipse.jface.jar${path.separator}extensions/swt/lib/${swt.jar.file}"/>
+            <arg value="${java14_glazedlists.dir}/extensions/swt/source"/>
+        </java>
+
+        <!-- Declaw calculation/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/calculation/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/calculation/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/calculation/lib/jcommon.jar${path.separator}extensions/calculation/lib/jfreechart.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/calculation/source"/>
+        </java>
+
+        <!-- Declaw jfreechart/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/jfreechart/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/jfreechart/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/jfreechart/lib/jcommon.jar${path.separator}extensions/jfreechart/lib/jfreechart.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/jfreechart/source"/>
+        </java>
+
+        <!-- Declaw nachocalendar/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/nachocalendar/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/nachocalendar/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/nachocalendar/lib/nachocalendar.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/nachocalendar/source"/>
+        </java>
+
+        <!-- Declaw jgoodiesforms/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/jgoodiesforms/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/jgoodiesforms/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/jgoodiesforms/lib/forms.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/jgoodiesforms/source"/>
+        </java>
+
+        <!-- Declaw treetable/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/treetable/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/treetable/source"/>
+            <arg value="${classes.dir}"/>
+            <arg value="${java14_glazedlists.dir}/extensions/treetable/source"/>
+        </java>
+
+    	<!-- Declaw hibernate/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/hibernate/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/hibernate/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/hibernate/lib/hibernate.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/hibernate/source"/>
+        </java>
+
+    	<!-- Declaw icu4j/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/icu4j/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/icu4j/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/icu4j/lib/icu4j.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/icu4j/source"/>
+        </java>
+    	
+        <!-- do not declaw swinglabs: swingx is only supported on Java >= 1.5
+        <mkdir dir="${java14_glazedlists.dir}/extensions/swinglabs/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/swinglabs/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/swinglabs/lib/swingx.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/swinglabs/source"/>
+        </java>
+		-->
+        <!-- Declaw issuesbrowser/ -->
+        <mkdir dir="${java14_glazedlists.dir}/extensions/issuesbrowser/source"/>
+        <java classname="com.publicobject.declawer.Declawer" classpath="tools/declawer.jar">
+            <arg value="extensions/issuesbrowser/source"/>
+            <arg value="${classes.dir}${path.separator}extensions/swt/lib/org.eclipse.core.commands.jar${path.separator}extensions/swt/lib/org.eclipse.jface.jar${path.separator}extensions/swt/lib/${swt.jar.file}${path.separator}extensions/jfreechart/lib/jcommon.jar${path.separator}extensions/jfreechart/lib/jfreechart.jar${path.separator}extensions/jgoodiesforms/lib/forms.jar${path.separator}extensions/nachocalendar/lib/nachocalendar.jar${path.separator}extensions/issuesbrowser/lib/http.jar"/>
+            <arg value="${java14_glazedlists.dir}/extensions/issuesbrowser/source"/>
+        </java>
+
+        <!-- Copy all of the resources (non-source files) to the java14 directory. -->
+        <copy todir="${java14_glazedlists.dir}">
+            <fileset dir=".">
+                <exclude name="${target.dir}/**"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.class"/>
+            </fileset>
+        </copy>
+
+        <!-- Alter the target platform in the java14 build.xml file from 1.5 to 1.4. -->
+        <replace file="${java14_glazedlists.dir}/build.xml" token="&lt;property name=&quot;java.target.version&quot; value=&quot;1.5&quot;/&gt;" value="&lt;property name=&quot;java.target.version&quot; value=&quot;1.4&quot;/&gt;"/>
+        <replace file="${java14_glazedlists.dir}/build.xml" token="&lt;property name=&quot;java.target.version.fileFriendlyName&quot; value=&quot;java15&quot;/&gt;" value="&lt;property name=&quot;java.target.version.fileFriendlyName&quot; value=&quot;java14&quot;/&gt;"/>
+    </target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   REDISTRIBUTING THE SOURCE
+	   Package the entire Glazed Lists source tree in a .zip file.
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<target name="dist" depends="clean"
+		description="Create a .zip file of the source for backup or distribution.">
+		<mkdir dir="${target.dir}"/>
+		<zip destfile="${target.dir}/${dist.file}" basedir=".">
+			<exclude name="${target.dir}/**"/>
+			<exclude name="tools/**"/>
+			<exclude name="extensions/**/lib/**"/>
+			<exclude name="www/**"/>
+			<exclude name="*.iml"/> <!-- Intellij IDEA Module File -->
+			<exclude name="*.ipr"/> <!-- Intellij IDEA Project File -->
+			<exclude name="*.iws"/> <!-- Intellij IDEA Workspace File -->
+			<exclude name="*.tfpt"/> <!-- Performance Test Data (mozillabugs.tfpt, mp3collection.tfpt) -->
+			<exclude name=".project"/> <!-- Eclipse project file -->
+			<exclude name=".classpath"/> <!-- Eclipse project classpath -->
+			<exclude name=".settings/**"/>	<!-- Eclipse project settings -->
+		</zip>
+	</target>
+
+    <target name="upload" depends="dist,jar,compiletests"
+        description="Upload binaries to java.net, see http://javanettasks.dev.java.net/">
+
+        <!-- download the javanettasks library for uploading jars to the java.net webserver -->
+        <mkdir dir="tools"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/25945/javanettasks.jar"/>
+            <arg value="tools/javanettasks.jar"/>
+        </java>
+
+        <!-- prepare the javaNetUpload task -->
+        <taskdef resource="org/kohsuke/javanettasks.properties" classpath="tools/javanettasks.jar"/>
+
+        <!-- upload source -->
+        <javaNetUpload projectName="glazedlists"
+            toFile="/latest_build/${dist.file}"
+            fromFile="${target.dir}/${dist.file}"
+            fileDescription="Source build by ${user.name} at ${datestamp.dateAndTime}"
+            overwrite="yes"
+            fileStatus="Draft"/>
+
+        <!-- upload binary -->
+        <javaNetUpload projectName="glazedlists"
+            toFile="/latest_build/${jar.file}"
+            fromFile="${target.dir}/${jar.file}"
+            fileDescription="Binary build by ${user.name} at ${datestamp.dateAndTime}"
+            overwrite="yes"
+            fileStatus="Draft"/>
+	</target>
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       TEST
+       Compile unit tests and run them using JUnit.
+       This task depends on JUnit, available free at http://www.junit.org
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+    <target name="test" depends="compiletests"
+            description="Compile unit tests and run them using JUnit.">
+           <!-- Execute JUnit tests -->
+            <junit printsummary="true" showoutput="false" fork="true"
+                    errorProperty="test.failed" failureProperty="test.failed">
+                    <assertions>
+                    	<enable/>
+                    </assertions>
+                    <classpath>
+                        <pathelement location="${classes.dir}"/>
+                        <pathelement location="${testclasses.dir}"/>
+                        <fileset dir="extensions" includes="**/*.jar"/>
+                        <fileset file="${ant.home}/lib/junit.jar"/>
+                    	<pathelement location="extensions/hibernate/etc"/>
+                    </classpath>
+                    <formatter type="brief" usefile="false"/>
+                    <batchtest>
+                    	<fileset dir="${testclasses.dir}" includes="**/**Test.class"/>
+                    </batchtest>
+            </junit>
+            <fail message="Tests failed. Check test output." if="test.failed"/>
+    </target>
+
+    <target name="compiletests" depends="compileall">
+        <!-- Verify that JUnit is available on the classpath -->
+		<available classname="junit.framework.TestCase" property="junit.present"/>
+		<fail unless="junit.present" message="To run this task, install junit.jar and optional.jar into ${ant.home}/lib/ JUnit is available free at http://www.junit.org"/>
+		<mkdir dir="${testclasses.dir}"/>
+	    <javac destdir="${testclasses.dir}" srcdir="test" debug="on" source="${java.target.version}" target="${java.target.version}" deprecation="off">
+            <classpath>
+                <pathelement location="${classes.dir}"/>
+                <fileset dir="extensions" includes="**/*.jar"/>
+                <fileset file="${ant.home}/lib/junit.jar"/>
+            </classpath>
+        </javac>
+
+		<!-- Copy over the mapping files -->
+		<copy todir="${testclasses.dir}">
+			<fileset dir="test">
+				<patternset refid="test.files"/>
+			</fileset>
+		</copy>
+    </target>
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   MAVEN-BUNDLE
+	   Construct the maven upload bundle.
+	   It contains the POM, the main artifact, source and javadoc jar
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<target name="maven-bundle" depends="jar-sources,jar-javadoc,jar"
+		description="Creates glazedlists upload bundle for maven repository.">
+		<copy file="pom.xml" todir="${maven_bundle.dir}" filtering="true"/>
+		<copy file="${target.dir}/${jar.file}" tofile="${maven_bundle.dir}/glazedlists_${java.target.version.fileFriendlyName}-${version}.jar"/>
+		<jar destfile="${target.dir}/${maven_bundle.file}">
+            <fileset dir="${maven_bundle.dir}">
+				<include name="pom.xml"/>
+				<include name="glazedlists_${java.target.version.fileFriendlyName}-${version}.jar"/>
+				<include name="glazedlists_${java.target.version.fileFriendlyName}-${version}-sources.jar"/>
+				<include name="glazedlists_${java.target.version.fileFriendlyName}-${version}-javadoc.jar"/>
+            </fileset>
+		</jar>
+		<delete dir="${maven_bundle.dir}"/>
+	</target>
+
+	<target name="check-version" description="Checks version property">
+		<fail unless="version" message="To build a maven upload bundle the property 'version' must be defined."/>
+	</target>
+
+	<target name="jar-sources" depends="check-version,dist"
+		description="Create a .jar file containing the source files.">
+		<mkdir dir="${maven_bundle.dir}"/>
+		<copy file="${target.dir}/${dist.file}" tofile="${maven_bundle.dir}/glazedlists_${java.target.version.fileFriendlyName}-${version}-sources.jar"/>
+		<jar destfile="${maven_bundle.dir}/glazedlists_${java.target.version.fileFriendlyName}-${version}-sources.jar" update="true"/>
+	</target>
+
+	<target name="jar-javadoc" depends="check-version,docs"
+		description="Create a .jar file containing the javadoc.">
+		<mkdir dir="${maven_bundle.dir}"/>
+		<jar destfile="${maven_bundle.dir}/glazedlists_${java.target.version.fileFriendlyName}-${version}-javadoc.jar" basedir="${docs.dir}/api"/>
+	</target>
+	
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	   RELEASE
+	   Build a Glazed Lists release with version number.
+	   It builds source distribution, binary jar and maven upload bundle with correct file names.
+	 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+	<target name="check-release-version" description="Checks version property">
+		<fail unless="version" message="To build or upload a release the property 'version' must be defined."/>
+	</target>
+	
+	<target name="release" depends="check-release-version"
+		description="Builds a release with binary jar, source distribution and maven upload bundle">
+		<antcall target="maven-bundle">
+			<param name="doctitle" value="Glazed Lists ${version}"/>
+			<param name="implementation.version" value="${version}"/>
+			<param name="bundle.version" value="${version}"/>
+			<param name="jar.file" value="${release.jar.file}"/>
+			<param name="dist.file" value="${release.dist.file}"/>
+		</antcall>
+		<echo message="${line.separator}Release build completed. Please upload with: 'ant -Dversion=${version} upload-release'"/>
+		<echo message="Remember to increase the value for build property 'next.release.version'"/>
+	</target>
+
+	<target name="check-release-artifacts">
+		<fail message="Files for release upload are missing, build a release first.">
+	    	<condition>
+	    		<or>
+	       			<not>
+			       		<available file="${target.dir}/${release.jar.file}" property="jar.file.present"/>
+	    	   		</not>
+	       			<not>
+			       		<available file="${target.dir}/${release.dist.file}" property="dist.file.present"/>
+	    	   		</not>
+	       			<not>
+			       		<available file="${target.dir}/${maven_bundle.file}" property="maven_bundle.file.present"/>
+	    	   		</not>
+	    		</or>
+	     	</condition>
+		</fail>
+	</target>
+	
+	<target name="upload-release" depends="check-release-version, check-release-artifacts"
+		description="Uploads a release to glazedlists.dev.java.net">
+        <!-- download the javanettasks library for uploading jars to the java.net webserver -->
+        <mkdir dir="tools"/>
+        <java classname="ca.odell.glazedlists.impl.HttpClient">
+            <classpath path="${classes.dir}"/>
+            <arg value="https://glazedlists.dev.java.net/files/documents/1073/25945/javanettasks.jar"/>
+            <arg value="tools/javanettasks.jar"/>
+        </java>
+
+        <!-- prepare the javaNetUpload task -->
+        <taskdef resource="org/kohsuke/javanettasks.properties" classpath="tools/javanettasks.jar"/>
+		
+        <!-- upload source distribution -->
+		<echo message="Uploading to /glazedlists-${version}/${release.dist.file}"/>
+        <javaNetUpload projectName="glazedlists"
+            toFile="/glazedlists-${version}/${release.dist.file}"
+            fromFile="${target.dir}/${release.dist.file}"
+            fileDescription="Source release by ${user.name} at ${datestamp.dateAndTime}"
+            fileStatus="Archival"/>
+
+        <!-- upload binary jar -->
+		<echo message="Uploading to /glazedlists-${version}/${release.jar.file}"/>		
+        <javaNetUpload projectName="glazedlists"
+            toFile="/glazedlists-${version}/${release.jar.file}"
+            fromFile="${target.dir}/${release.jar.file}"
+            fileDescription="Binary release by ${user.name} at ${datestamp.dateAndTime}"
+            fileStatus="Archival"/>
+
+		<!-- upload maven bundle -->
+		<echo message="Uploading to /maven_upload/${maven_bundle.file}"/>
+        <javaNetUpload projectName="glazedlists"
+            toFile="/maven_upload/${maven_bundle.file}"
+            fromFile="${target.dir}/${maven_bundle.file}"
+            fileDescription="Maven upload bundle by ${user.name} at ${datestamp.dateAndTime}"
+            fileStatus="Archival"/>		
+	</target>
+	
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       M4
+       Run the m4 preprocessor to generate source code, see
+       Unix: http://www.gnu.org/software/m4/
+       Windows; http://gnuwin32.sourceforge.net/packages/m4.htm
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <target name="m4">
+        <!-- generate the four color tree -->
+        <mapper id="bcii_to_fourcolorintermediate" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/FourColor*.java_intermediate"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DVAR_COLOUR_COUNT=4"/>
+            <arg line="-DVAR_WIDE_NODES=true"/>
+            <arg line="-DVAR_TYPE_COUNT=1"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"/>
+            <mapper refid="bcii_to_fourcolorintermediate"/>
+            <redirector><outputmapper refid="bcii_to_fourcolorintermediate"/></redirector>
+        </apply>
+
+        <mapper id="fourcolorintermediate_to_fourcolor" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/FourColor*.java_intermediate"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/FourColor*.java"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DBciiTree=FourColorTree"/>
+            <arg line="-DBciiNode=FourColorNode"/>
+            <arg line="-DBciiTreeAsList=FourColorTreeAsList"/>
+            <arg line="-DBciiTreeIterator=FourColorTreeIterator"/>
+            <arg line="-DCOMMAPLACEHOLDER=,"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/FourColor*.java_intermediate"/>
+            <mapper refid="fourcolorintermediate_to_fourcolor"/>
+            <redirector><outputmapper refid="fourcolorintermediate_to_fourcolor"/></redirector>
+        </apply>
+
+        <!-- generate the four color two value tree -->
+        <mapper id="bcii_to_fourcolortwovalueintermediate" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/FourColorTwoValue*.java_intermediate"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DVAR_COLOUR_COUNT=4"/>
+            <arg line="-DVAR_WIDE_NODES=true"/>
+            <arg line="-DVAR_TYPE_COUNT=2"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"/>
+            <mapper refid="bcii_to_fourcolortwovalueintermediate"/>
+            <redirector><outputmapper refid="bcii_to_fourcolortwovalueintermediate"/></redirector>
+        </apply>
+
+        <mapper id="fourcolortwovalueintermediate_to_fourcolortwovalue" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/FourColorTwoValue*.java_intermediate"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/FourColorTwoValue*.java"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DBciiTree=FourColorTwoValueTree"/>
+            <arg line="-DBciiNode=FourColorTwoValueNode"/>
+            <arg line="-DBciiTreeAsList=FourColorTwoValueTreeAsList"/>
+            <arg line="-DBciiTreeIterator=FourColorTwoValueTreeIterator"/>
+            <arg line="-DCOMMAPLACEHOLDER=,"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/FourColor*.java_intermediate"/>
+            <mapper refid="fourcolortwovalueintermediate_to_fourcolortwovalue"/>
+            <redirector><outputmapper refid="fourcolortwovalueintermediate_to_fourcolortwovalue"/></redirector>
+        </apply>
+
+        <!-- generate the simple tree -->
+        <mapper id="bcii_to_simpleintermediate" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/Simple*.java_intermediate"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DVAR_COLOUR_COUNT=1"/>
+            <arg line="-DVAR_WIDE_NODES=false"/>
+            <arg line="-DVAR_TYPE_COUNT=1"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/Bcii*.java"/>
+            <mapper refid="bcii_to_simpleintermediate"/>
+            <redirector><outputmapper refid="bcii_to_simpleintermediate"/></redirector>
+        </apply>
+
+        <mapper id="simpleintermediate_to_simple" type="glob"
+           from="source/ca/odell/glazedlists/impl/adt/barcode2/Simple*.java_intermediate"
+           to="source/ca/odell/glazedlists/impl/adt/barcode2/Simple*.java"/>
+        <apply executable="m4" parallel="false">
+            <arg line="--prefix-builtins"/>
+            <arg line="-DBciiTree=SimpleTree"/>
+            <arg line="-DBciiNode=SimpleNode"/>
+            <arg line="-DBciiTreeAsList=SimpleTreeAsList"/>
+            <arg line="-DBciiTreeIterator=SimpleTreeIterator"/>
+            <arg line="-DCOMMAPLACEHOLDER=,"/>
+            <srcfile/>
+            <fileset dir="${basedir}" includes="source/ca/odell/glazedlists/impl/adt/barcode2/Simple*.java_intermediate"/>
+            <mapper refid="simpleintermediate_to_simple"/>
+            <redirector><outputmapper refid="simpleintermediate_to_simple"/></redirector>
+        </apply>
+
+        <!-- Delete intermediate files -->
+        <delete>
+            <fileset dir="${basedir}" defaultexcludes="no">
+                <include name="source/ca/odell/glazedlists/impl/adt/barcode2/*.java_intermediate"/>
+            </fileset>
+        </delete>
+    </target>
+
+</project>
