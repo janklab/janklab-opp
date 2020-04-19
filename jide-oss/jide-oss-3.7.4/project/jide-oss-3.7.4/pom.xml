@@ -16,7 +16,7 @@
     <groupId>net.janklab.opp</groupId>
     <artifactId>jide-oss</artifactId>
     <name>JIDE Common Layer</name>
-    <version>3.7.4</version>
+    <version>3.7.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>JIDE Common Layer (Professional Swing Components) (Repackaged by Janklab)</description>
     <url>https://github.com/jidesoft/jide-oss</url>

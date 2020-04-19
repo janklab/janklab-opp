@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.janklab.opp</groupId>
     <artifactId>glazedlists</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Glazed Lists</name>
     <description>Event-driven lists for dynamically filtered and sorted tables (Repackaged by Janklab)</description>
