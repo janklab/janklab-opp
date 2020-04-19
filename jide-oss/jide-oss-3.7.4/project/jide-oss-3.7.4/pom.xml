@@ -13,12 +13,12 @@
         <version>7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jidesoft</groupId>
+    <groupId>net.janklab.opp</groupId>
     <artifactId>jide-oss</artifactId>
     <name>JIDE Common Layer</name>
     <version>3.7.4</version>
     <packaging>jar</packaging>
-    <description>JIDE Common Layer (Professional Swing Components)</description>
+    <description>JIDE Common Layer (Professional Swing Components) (Repackaged by Janklab)</description>
     <url>https://github.com/jidesoft/jide-oss</url>
     <licenses>
         <license>
@@ -100,8 +100,8 @@
                 </property>
             </activation>
             <properties>
-                <gpg.keyname>7929F719</gpg.keyname>
-                <release.username>jidesoft</release.username>
+                <gpg.keyname>24AF1EA5</gpg.keyname> <!-- andrew@apjanke.net's key -->
+                <release.username>apjanke</release.username>
             </properties>
             <build>
                 <plugins>
