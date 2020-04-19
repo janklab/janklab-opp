@@ -14,13 +14,13 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jidesoft</groupId>
+    <groupId>net.janklab.opp</groupId>
     <artifactId>jide-oss</artifactId>
     <name>JIDE Common Layer</name>
     <version>3.7.4</version>
 
     <packaging>jar</packaging>
-    <description>JIDE Common Layer (Professional Swing Components)</description>
+    <description>JIDE Common Layer (Professional Swing Components) (Repackaged by Janklab)</description>
     <url>https://github.com/jidesoft/jide-oss</url>
 
     <licenses>
@@ -43,7 +43,18 @@
             <email>support@jidesoft.com</email>
         </developer>
     </developers>
-
+    <contributors>
+        <contributor>
+            <name>Andrew Janke</name>
+            <email>floss@apjanke.net</email>
+            <url>https://apjanke.net</url>
+            <organization>Janklab</organization>
+            <organizationUrl>https://github.com/apjanke/janklab</organizationUrl>
+            <roles>
+                <role>packager</role>
+            </roles>
+        </contributor>
+    </contributors>
     <properties>
         <!-- path to JDK9+ -->
         <java9.jdk>/home/bourgesl/apps/jdk-9/</java9.jdk>
@@ -240,8 +251,8 @@
                 </property>
             </activation>
             <properties>
-                <gpg.keyname>7929F719</gpg.keyname>
-                <release.username>jidesoft</release.username>
+                <gpg.keyname>24AF1EA5</gpg.keyname>
+                <release.username>apjanke</release.username>
             </properties>
             <build>
                 <plugins>
