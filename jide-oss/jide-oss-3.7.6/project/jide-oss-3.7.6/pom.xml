@@ -57,7 +57,10 @@
     </contributors>
     <properties>
         <!-- path to JDK9+ -->
-        <java9.jdk>/home/bourgesl/apps/jdk-9/</java9.jdk>
+        <!-- This is a total HACK! put in by Janklab. It points to JDK9 on macOS. 
+             This exists because the upstream JDK9 stuff pointed at a JIDE-specific
+             /home/bourgesl/apps/jdk-9, which isn't portable. -->
+        <java9.jdk>/Library/Java/JavaVirtualMachines/jdk-9.0.4.jdk/Contents/Home</java9.jdk>
         <java9.sourceDirectory>${project.basedir}/src-jdk9</java9.sourceDirectory>
         <java9.build.outputDirectory>${project.build.directory}/classes-jdk9</java9.build.outputDirectory>
         <!-- enable release tasks (javadoc, sources, release) -->
