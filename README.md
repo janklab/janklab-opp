@@ -12,7 +12,11 @@ The redistributed libraries are licensed under various open source licenses. See
 
 | Library | License | Home Page | Comments |
 | ------- | ------- | --------- | -------- |
+| BlueCove | GPL | <http://www.bluecove.org> | |
+| Glazed Lists | LGPL/MPL dual license | <http://www.glazedlists.com> | |
+| JIDE OSS | GPL w/ Classpath Exception / free commercial dual license | <http://www.jidesoft.com/products/oss.htm> | |
 | sqlite4java | Apache 2.0 | [sqlite4java on BitBucket](https://bitbucket.org/almworks/sqlite4java) | |
+| TableLayout | Clearthought Software License (???) | <http://clearthought.info> | See notes in its dir for details |
 
 ## Maintainer
 
